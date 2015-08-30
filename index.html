@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.2/backbone.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/RTCMultiConnection.js"></script><!-- for p2p streaming -->      
+    <script src="https://cdn.webrtc-experiment.com/firebase.js"></script><!-- for signaling medium -->
+
+</head>
+
+
+  <body>
+    
+
+      <hr>
+        <button id="openRoom">Open Room</button>
+        <button id="joinRoom">Join Room</button>
+        <button id="shareScreen">Share Screen</button>
+      <hr>
+
+      <div id='main-view'>
+          <canvas id ='main-canvas'></canvas>
+          <div id="videos-container"></div>
+      </div>
+
+      <div id="color-list"></div>       
+          
+          <ul id='button-list'>
+             <li><button id='fire'>Fire</button></li>
+             <li><button id='draw'>Draw</button></li>
+             <li><button id='color'>Video Effects</button></li>
+          </ul>        
+
+      <div id='screenshots'></div>
+
+      <img src="" alt="">
+
+
+
+    <!-- Screen Shot Test -->
+    <script type="text/javascript">
+          setInterval(function(){
+            html2canvas( $('#main-view') , {
+              onrendered: function(canvas) {
+                $('#screenshots').append(canvas);
+              },
+              width: 300,
+              height: 300,
+              allowTaint: false,
+              useCORS: false
+            });
+          },10000)
+    </script>
+
+    <script src="video.js"></script>
+    <script src="game.js"></script>
+    <script src="game2.js"></script>
+    <script src="color.js"></script>
+    <script type="text/javascript" src='html2canvas.js'></script>
+    <link rel="stylesheet" href="/css/main.css">
+
+
+
+
+
+  </body>
+</html>

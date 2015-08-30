@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script>
+        var is3D = false;
+        var isGrayscale = false;
+        var isSepia = false;
+        var isPlaying = false;
+
+
+        function IntroTextImage() {
+            var canvas = document.getElementById("videoscreen");
+            logo = document.getElementById("logo");
+
+            if (canvas.getContext) {
+                var context = canvas.getContext('2d');
+                context.drawImage(logo, 320 - 50, 180 - 64, 50, 64);
+                context.lineWidth = 1; 
+                context.fillStyle = "#000";                
+                context.font = "18px sans-serif";
+                context.fillText("Realtime video filters", 10, 40);
+                context.font = "16px sans-serif";
+                context.fillText("Click play button to start video playback", 10, 60);
+                context.fillText("select your filter, normal, grey, sepia", 10, 80);
+                context.fillText("or red/cyan 3D anaglyph.", 10, 100);
+                context.fillText("You can also pause the video,", 10, 140);
+                context.fillText("and view each filter effect", 10, 160);
+            }
+        }
+
+        function Play() {
+            if (!isPlaying) {
+                document.getElementById("videodata").play();
+                document.getElementById("PlayPause").value = "Pause";
+                isPlaying = true;
+                document.getElementById("PlayPause").src = "images/playon.png";
+            }
+            else {
+                document.getElementById("videodata").pause();
+                document.getElementById("PlayPause").value = "Play";
+                isPlaying = false;
+                document.getElementById("PlayPause").src = "images/playoff.png";
+            }
+            draw();
+
+        }
+
+        function draw() {
+            if (window.requestAnimationFrame) window.requestAnimationFrame(draw);
+            // IE implementation
+            else if (window.msRequestAnimationFrame) window.msRequestAnimationFrame(draw);
+            // Firefox implementation
+            else if (window.mozRequestAnimationFrame) window.mozRequestAnimationFrame(draw);
+            // Chrome implementation
+            else if (window.webkitRequestAnimationFrame) window.webkitRequestAnimationFrame(draw);
+            // Other browsers that do not yet support feature
+            else setTimeout(draw, 16.7);
+            DrawVideoOnCanvas();
+        }
+
+        function Draw3D(object) {
+            var xScale = 0.029;
+            var yScale = 0.0093;
+            var imageXOffset = 0;
+            var imageYOffset = 0;
+            var width = object.width;
+            var height = object.height;
+            var canvas = document.getElementById("videoscreen");
+            canvas.setAttribute('width', width);
+            canvas.setAttribute('height', height);
+            if (canvas.getContext) {
+                var context = canvas.getContext('2d');
+                context.drawImage(object, 0, 0, width, height);
+                imageXOffset = parseInt(object.width * xScale);
+                imageYOffset = parseInt(object.height * yScale);
+                imgDataLeft = context.getImageData(0, 0, width, height);
+                imgDataRight = context.getImageData(-imageXOffset, -imageYOffset, width, height);
+
+                var imgData = context.createImageData(width, height);
+                for (i = 0; i < imgData.width * imgData.height * 4; i += 4) {
+                    imgData.data[i + 0] = imgDataRight.data[i + 0];
+                    imgData.data[i + 1] = imgDataLeft.data[i + 1];
+                    imgData.data[i + 2] = imgDataLeft.data[i + 2];
+                    imgData.data[i + 3] = imgDataLeft.data[i + 3];
+                }
+                context.putImageData(imgData, 0, 0);
+            }
+        }
+
+        function DrawNormal(object) {
+            var width = object.width;
+            var height = object.height;
+            var canvas = document.getElementById("videoscreen");
+            canvas.setAttribute('width', width);
+            canvas.setAttribute('height', height);
+            if (canvas.getContext) {
+                var context = canvas.getContext('2d');
+                context.drawImage(object, 0, 0, width, height);               
+            }
+        }
+
+
+        function DrawGrayscale(object) {
+            var width = object.width;
+            var height = object.height;
+            var canvas = document.getElementById("videoscreen");
+            canvas.setAttribute('width', width);
+            canvas.setAttribute('height', height);
+            if (canvas.getContext) {
+                var context = canvas.getContext('2d');
+                context.drawImage(object, 0, 0, width, height);
+                imgDataNormal = context.getImageData(0, 0, width, height);
+                var imgData = context.createImageData(width, height);
+
+                for (i = 0; i < imgData.width * imgData.height * 4; i += 4) {
+                    var gray = 0.2126 * imgDataNormal.data[i + 0] + 0.7152 * imgDataNormal.data[i + 1] + 0.0722 * imgDataNormal.data[i + 2];
+                    //var gray = (imgDataNormal.data[i + 0] + imgDataNormal.data[i + 1] + imgDataNormal.data[i + 2]) / 3;
+                    imgData.data[i + 0] = imgData.data[i + 1] = imgData.data[i + 2] = gray;
+                    imgData.data[i + 3] = imgDataNormal.data[i + 3];
+                }
+                context.putImageData(imgData, 0, 0);
+            }
+        }
+
+        function DrawSepia(object) {
+            var width = object.width;
+            var height = object.height;
+            var canvas = document.getElementById("videoscreen");
+            canvas.setAttribute('width', width);
+            canvas.setAttribute('height', height);
+            if (canvas.getContext) {
+                var context = canvas.getContext('2d');
+                context.drawImage(object, 0, 0, width, height);
+                imgDataNormal = context.getImageData(0, 0, width, height);
+                var imgData = context.createImageData(width, height);
+
+                for (i = 0; i < imgData.width * imgData.height * 4; i += 4) {
+                    var r = (imgDataNormal.data[i + 0] * .393) + (imgDataNormal.data[i + 1] * .769) + (imgDataNormal.data[i + 2] * .189);
+                    var g = (imgDataNormal.data[i + 0] * .349) + (imgDataNormal.data[i + 1] * .686) + (imgDataNormal.data[i + 2] * .168);
+                    var b = (imgDataNormal.data[i + 0] * .272) + (imgDataNormal.data[i + 1] * .534) + (imgDataNormal.data[i + 2] * .131);
+                    if (r > 255) {
+                        r = 255;
+                    }
+                    if (g > 255) {
+                        g = 255;
+                    }
+                    if (b > 255) {
+                        b = 255;
+                    }
+                    imgData.data[i + 0] = r;
+                    imgData.data[i + 1] = g;
+                    imgData.data[i + 2] = b;
+                    imgData.data[i + 3] = imgDataNormal.data[i + 3];
+                }
+                context.putImageData(imgData, 0, 0);
+            }
+        }
+
+        function DrawVideoOnCanvas() {
+            var object = document.getElementById("videodata")
+            if (is3D) {
+                Draw3D(object)
+            }
+            else if (isGrayscale) {
+                DrawGrayscale(object);
+            }
+            else if (isSepia) {
+                DrawSepia(object);
+            }
+            else {
+                DrawNormal(object);
+            }
+        }
+
+        function ChangeMode(mode) {
+            switch(mode)
+            {
+                case "3D":
+                    is3D = true;
+                    isGrayscale = false;
+                    isSepia = false;
+                    document.getElementById("Mode3D").src = "images/3don.png";
+                    document.getElementById("ModeGray").src = "images/greyoff.png";
+                    document.getElementById("ModeSepia").src = "images/sepiaoff.png";
+                    document.getElementById("ModeNormal").src = "images/rgboff.png";
+                    break;
+                case "Gray":
+                    is3D = false;
+                    isGrayscale = true;
+                    isSepia = false;
+                    document.getElementById("ModeGray").src = "images/greyon.png";
+                    document.getElementById("Mode3D").src = "images/3doff.png";
+                    document.getElementById("ModeSepia").src = "images/sepiaoff.png";
+                    document.getElementById("ModeNormal").src = "images/rgboff.png";
+                    break;
+                case "Sepia":
+                    is3D = false;
+                    isGrayscale = false;
+                    isSepia = true;
+                    document.getElementById("ModeSepia").src = "images/sepiaon.png";
+                    document.getElementById("ModeNormal").src = "images/rgboff.png";
+                    document.getElementById("Mode3D").src = "images/3doff.png";
+                    document.getElementById("ModeGray").src = "images/greyoff.png";
+                    break;
+                case "Normal":
+                    is3D = false;
+                    isGrayscale = false;
+                    isSepia = false;
+                    document.getElementById("ModeNormal").src = "images/rgbon.png";
+                    document.getElementById("ModeGray").src = "images/greyoff.png";
+                    document.getElementById("Mode3D").src = "images/3doff.png";
+                    document.getElementById("ModeSepia").src = "images/sepiaoff.png";
+                    break;
+            }
+        }
+        function Mouse(object, src) {
+           
+                if (is3D && object.id != 'Mode3D') {
+                    object.src = src;
+                }
+                else if (isGrayscale && object.id != 'ModeGray') {
+                    object.src = src;
+                }
+                else if (isSepia && object.id != 'ModeSepia') {
+                    object.src = src;
+                }
+                else if (!is3D && !isGrayscale && !isSepia && object.id != "ModeNormal") {
+                    object.src = src;
+                }
+           
+        }
+
+        function MousePlay(object, src) {
+            if (!isPlaying) {
+                object.src = src;
+            }
+        }
+    </script>
+     <style >
+  input:active, input:focus {
+   outline: none;
+   ie-dummy: expression(this.hideFocus=true);
+  }
+ </style>
+</head>
+<body style="background-color:#666666;" onload="IntroTextImage();">
+<div style="width:369px;height:273px;padding-top:24px;padding-left:26px;background-image:url('images/tvmain.png');background-repeat:no-repeat;">
+<canvas id="videoscreen" width="320" height="180" style="background-color:#ccc;">
+    <p>Sorry your browser does not support HTML5</p>
+</canvas>
+
+<div style="position:relative;top:0;left:0;margin:0;padding:0;">
+    <div style="margin-top:-1px;display:inline-block;float:left;">
+        <input title="Play/Pause" id="PlayPause" type="image" value="Play" src="images/playOff.png" onclick="Play()" onmouseover="MousePlay(this,'images/playOn.png');" onmouseout="MousePlay(this,'images/playOff.png');" />
+    </div>
+    <div style="margin-top:-1px;display:inline-block;float:right;text-align:right;margin-right:40px; width:250px;border: none;">
+        <input title="Colour" id="ModeNormal" type="image" value="Normal" src="images/rgbon.png" onclick="ChangeMode('Normal');" onmouseover="Mouse(this,'images/rgbon.png');" onmouseout="Mouse(this,'images/rgboff.png');" />        
+        <input title="Grey" id="ModeGray" type="image" value="Grayscale" src="images/greyoff.png" onclick="ChangeMode('Gray');" onmouseover="Mouse(this,'images/greyon.png');" onmouseout="Mouse(this,'images/greyoff.png');" />
+        <input title="Sepia" id="ModeSepia" type="image" value="Sepia" src="images/sepiaoff.png" onclick="ChangeMode('Sepia');" onmouseover="Mouse(this,'images/sepiaon.png');" onmouseout="Mouse(this,'images/sepiaoff.png');" />
+        <input title="Red/Cyan Anaglyph" id="Mode3D" type="image" value="3D" src="images/3dOff.png" onclick="ChangeMode('3D');" onmouseover="Mouse(this,'images/3dOn.png');" onmouseout="Mouse(this,'images/3dOff.png');" />
+    </div>
+</div>
+</div>
+
+<img id="logo" style="display:none;" src="images/metialogo.png"  />
+<video style="display:none" id="videodata" preload="auto" controls width="320" height="180">
+     <source src="videos/big_buck_bunny.mp4" type='video/mp4' />
+     <source src="videos/big_buck_bunny.webm" type='video/webm' />
+     <source src="videos/big_buck_bunny.ogv" type='video/ogg' />
+</video>
+</body>
+</html>
